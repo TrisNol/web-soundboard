@@ -12,8 +12,6 @@ export class SoundController {
 
     @Get("/42")
     public getSoundById(): StreamableFile {
-        console.log("FHDAIFDHAIS");
-        console.log(process.cwd());
         const file = createReadStream("./apps/backend/src/assets/alex_stinkt.mp3");
         return new StreamableFile(file, {
             type: "audio/mpeg",

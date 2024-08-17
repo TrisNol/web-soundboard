@@ -6,6 +6,7 @@ import { Observable } from "rxjs";
     providedIn: 'root'
 })
 export class SoundboardService {
+    private sound: HTMLAudioElement | undefined;
     constructor(
         private readonly http: HttpClient
     ) { }
