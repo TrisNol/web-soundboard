@@ -13,7 +13,9 @@ RUN apt-get install -y nodejs && apt-get clean
 
 # Install Bun
 RUN curl -fsSL https://bun.sh/install | bash && \
-    ln -s $HOME/.bun/bin/bun /usr/local/bin/bun
+    ln -s $HOME/.bun/bin/bun /usr/local/bin/bun && \
+    ln -s $HOME/.bun/bin/bunx /usr/local/bin/bunx
+ENV PATH="/root/.bun/bin:$PATH"
 
 # Install Docker
 RUN echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" | \

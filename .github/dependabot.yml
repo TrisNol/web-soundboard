@@ -15,3 +15,9 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+    target-branch: develop
+    open-pull-requests-limit: 10
