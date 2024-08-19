@@ -1,9 +1,10 @@
-import { Controller, Delete, Get, Param, Post, StreamableFile, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, StreamableFile, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
 import { SoundService } from "./sound.service";
 
 import 'multer';
+import { Sound } from "../core/database/sound/sound.entity";
 
 @Controller("sound")
 export class SoundController {
@@ -27,8 +28,16 @@ export class SoundController {
 
     @Post("/")
     @UseInterceptors(FileInterceptor('file'))
-    public async createSound(@UploadedFile() file: Express.Multer.File): Promise<void> {
-        return;
+    public async createSound(@UploadedFile(
+        new ParseFilePipe({
+            validators: [
+                new MaxFileSizeValidator({ maxSize: 5 * 1024**2,  }), // 5 MiB
+                new FileTypeValidator({ fileType: 'audio/mpeg' }),
+            ],
+        }),
+    )
+    file: Express.Multer.File): Promise<Sound> {
+        return this.soundService.createSound(file.originalname, file.buffer);
     }
 
     @Delete(":id")

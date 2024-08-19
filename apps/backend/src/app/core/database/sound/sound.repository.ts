@@ -1,14 +1,15 @@
 
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Sound } from './sound.entity';
+import { Sequelize, Transaction } from 'sequelize';
 
 @Injectable()
 export class SoundRepository {
     constructor(
         @InjectModel(Sound)
-        private model: typeof Sound,
+        private model: typeof Sound
     ) { }
 
     async findAll(): Promise<Sound[]> {
@@ -19,8 +20,8 @@ export class SoundRepository {
         return this.model.findByPk(id);
     }
 
-    async create(sound: Partial<Sound>): Promise<Sound> {
-        return this.model.create(sound);
+    async create(sound: Partial<Sound>, transaction?: Transaction): Promise<Sound> {
+        return this.model.create(sound, { transaction });
     }
 
     async delete(id: string): Promise<void> {

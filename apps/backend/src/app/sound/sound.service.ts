@@ -3,13 +3,25 @@ import { ConfigService } from "@nestjs/config";
 
 import * as fs from "fs";
 import { SoundRepository } from "../core/database/sound/sound.repository";
+import { EnvironmentVariables } from "../common/interfaces/environment-variables.interface";
+import { Sound } from "../core/database/sound/sound.entity";
+import { Sequelize, Transaction } from "sequelize";
+import { InjectConnection } from "@nestjs/sequelize";
+import { ChecksumAlgorithm, generateChecksum } from "../common/utils/checksum.utills";
 
 @Injectable()
 export class SoundService {
     constructor(
-        private readonly configService: ConfigService,
-        private readonly soundRepository: SoundRepository
+        private readonly configService: ConfigService<EnvironmentVariables>,
+        private readonly soundRepository: SoundRepository,
+        @InjectConnection()
+        private connection: Sequelize,
     ) { }
+
+    
+    private buildPath(id: string): string {
+        return `${this.configService.get<string>("ASSETS_PATH")}/${id}.mp3`;
+    }
 
     public async getSounds(): Promise<any> {
         return this.soundRepository.findAll();
@@ -30,7 +42,21 @@ export class SoundService {
         return Promise.resolve(buffer);
     }
 
-    private buildPath(id: string): string {
-        return `${this.configService.get<string>("ASSETS_PATH")}/${id}.mp3`;
+    public async createSound(name: string, file: Buffer): Promise<Sound> {
+        const transaction: Transaction = await this.connection.transaction();
+        try {
+            const dbEntry = await this.soundRepository.create({
+                name: name,
+                checksum: generateChecksum(file, ChecksumAlgorithm.SHA256),
+            });
+            const path = this.buildPath(dbEntry.id);
+            fs.writeFileSync(path, file);
+            transaction.commit();
+            return dbEntry;
+        } catch(e) {
+            console.error(e);
+            transaction.rollback();
+            throw new InternalServerErrorException("Failed to create sound");
+        }
     }
 }
