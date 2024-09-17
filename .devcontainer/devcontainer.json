@@ -14,7 +14,8 @@
         4200
     ],
     "mounts": [
-        "source=//var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+        "source=//var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
+        "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
     ],
     "runArgs": [
         "--privileged",
@@ -22,7 +23,5 @@
         "--add-host=host.docker.internal:host-gateway"
     ],
     "remoteUser": "root",
-    "postStartCommand": "service docker start",
-    "workspaceMount": "source=web-soundboard-source,target=/workspace,type=volume",
-    "workspaceFolder": "/workspace"
+    "postStartCommand": "service docker start"
 }

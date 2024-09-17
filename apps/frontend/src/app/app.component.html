@@ -1,3 +1,5 @@
 <div style="text-align:center">
-    <button (click)="playSound()">Play Sound</button>
+    @for(sound of sounds; track sound.id) {
+        <button (click)="playSound(sound)">{{sound.name}}</button>
+    }
 </div>

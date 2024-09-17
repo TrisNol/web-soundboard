@@ -12,66 +12,35 @@ import { SoundboardService } from "./services/soundboard.service";
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  title = 'frontend';
+  title = 'Web Soundboard';
+  public sounds: any[] = [];
 
-  private audioContext: AudioContext | undefined = undefined;
-
-  private microphoneStream: MediaStream | undefined = undefined;
-
+  private audioElement: HTMLAudioElement | undefined;
   constructor(private soundboardService: SoundboardService) {
   }
 
   async ngOnInit() {
-    this.requestMicrophoneAccess();
+    this.soundboardService.fetchSounds().subscribe((sounds: any[]) => {
+      console.log(sounds);
+      this.sounds = sounds;
+    });
   }
 
-  async requestMicrophoneAccess() {
-    const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-    console.log(s);
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then((stream: MediaStream) => {
-        this.microphoneStream = stream;
-        console.log('Microphone access granted');
-      })
-      .catch((err: Error) => {
-        console.error('Microphone access denied', err);
-      });
-  }
-
-  playSound() {
-    this.soundboardService.fetchAudio().subscribe((audioBlob: Blob) => {
+  playSound(sound: any) {
+    this.soundboardService.fetchAudio(sound.id).subscribe((audioBlob: Blob) => {
       const audioUrl = URL.createObjectURL(audioBlob);
       this.playAudio(audioUrl);
     });
   }
 
   async playAudio(url: string) {
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext)();
-    }
 
-    if (!this.microphoneStream) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        this.microphoneStream = stream;
-      } catch (error) {
-        console.error('Error accessing microphone:', error);
-        return;
-      }
-    }
 
     const audioElement = new Audio(url);
-    const sourceNode = this.audioContext.createMediaElementSource(audioElement);
-    const destinationNode = this.audioContext.createMediaStreamDestination();
-
-    sourceNode.connect(this.audioContext.destination); // Play audio to the speaker
-    sourceNode.connect(destinationNode); // Forward audio to MediaStreamDestination
-
-    // Add the tracks from the destination node to the microphone stream
-    destinationNode.stream.getAudioTracks().forEach(track => {
-      this.microphoneStream?.addTrack(track);
-    });
-
+    if (this.audioElement) {
+      this.audioElement.srcObject = null;
+    }
+    this.audioElement = audioElement;
     // Start playing the audio
     audioElement.play().then(() => {
       console.log('Playback started successfully');

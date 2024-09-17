@@ -11,7 +11,11 @@ export class SoundboardService {
         private readonly http: HttpClient
     ) { }
 
-    fetchAudio(): Observable<Blob> {
-        return this.http.get('http://localhost:3000/api/sound/42', { responseType: 'blob' });
+    fetchAudio(id: string): Observable<Blob> {
+        return this.http.get(`http://localhost:3000/api/sound/${id}`, { responseType: 'blob' });
+    }
+
+    fetchSounds(): Observable<any[]>{
+        return this.http.get<any[]>(`http://localhost:3000/api/sound`);
     }
 }
